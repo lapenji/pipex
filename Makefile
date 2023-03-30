@@ -16,11 +16,12 @@ FLAGS    := -Wall -Wextra -Werror
 
 SRCS        :=      get_next_line.c \
                           get_next_line_utils.c \
+                          pipex_bonus.c \
                           pipex.c \
                           split_2.c \
                           utils.c \
-                          utils2.c \
                           extra.c \
+                          utils2.c \
                           
 OBJS        := $(SRCS:.c=.o)
 

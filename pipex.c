@@ -5,109 +5,46 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: ltombell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/25 13:47:44 by ltombell          #+#    #+#             */
-/*   Updated: 2022/11/25 18:18:30 by ltombell         ###   ########.fr       */
+/*   Created: 2022/11/28 12:25:25 by ltombell          #+#    #+#             */
+/*   Updated: 2022/11/28 12:28:20 by ltombell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	do_child(t_prg *prg, char *cmd, char **envp)
+void	ft_son(t_prg *data, char *cmd, char **envp)
 {
-	int	pid;
-
-	pipe(prg->pipa);
-	pid = fork();
-	if (pid == 0)
-	{
-		close(prg->pipa[0]);
-		dup2(prg->pipa[1], 1);
-		execute_cmd(cmd, envp);
-	}
-	else
-	{
-		waitpid(pid, NULL, 0);
-		close(prg->pipa[1]);
-		dup2(prg->pipa[0], 0);
-	}
+	dup2 (data->pipa[1], 1);
+	close(data->pipa[0]);
+	dup2 (data->infile, 0);
+	execute_cmd(cmd, envp);
 }
 
-void	do_here_doc(int *pipa, char *delim)
+void	ft_father(t_prg *data, char *cmd, char **envp)
 {
-	char	*linea;
-	char	*delimiter;
-
-	delimiter = ft_strjoin(delim, "\n");
-	close(pipa[0]);
-	linea = get_next_line(0);
-	while (linea)
-	{
-		if (!ft_strncmp(linea, delimiter, ft_strlen(delimiter) + 1))
-		{
-			close(1);
-			free(linea);
-			free(delimiter);
-			exit(EXIT_SUCCESS);
-		}
-		ft_putstr_fd(linea, pipa[1]);
-		free(linea);
-		linea = get_next_line(0);
-	}
-	close(1);
-	free(linea);
-	free(delimiter);
-}
-
-void	here_doc_handler(char *delim)
-{
-	int	pipa[2];
-	int	pid;
-
-	pipe(pipa);
-	pid = fork();
-	if (pid > 0)
-	{
-		close(pipa[1]);
-		dup2(pipa[0], 0);
-		close(pipa[0]);
-		waitpid(pid, NULL, 0);
-	}
-	else
-		do_here_doc(pipa, delim);
-}
-
-void	ft_pipex(int argc, char **argv, char **envp)
-{
-	int		i;
-	t_prg	prg;
-
-	if (!ft_strncmp(argv[1], "here_doc", 9))
-	{
-		here_doc_handler(argv[2]);
-		open_files(&prg, argv, 1, argc);
-		i = 3;
-	}
-	else
-	{
-		open_files(&prg, argv, 2, argc);
-		dup2(prg.infile, 0);
-		i = 2;
-	}
-	while (i < argc - 2)
-	{
-		do_child(&prg, argv[i], envp);
-		i++;
-	}
-	dup2(prg.of, 1);
-	execute_cmd(argv[argc - 2], envp);
+	dup2 (data->pipa[0], 0);
+	close(data->pipa[1]);
+	dup2 (data->of, 1);
+	execute_cmd(cmd, envp);
 }
 
 int	main(int argc, char **argv, char **envp)
 {
-	if (argc >= 5)
+	t_prg	prg;
+
+	if (argc == 5)
 	{
-		ft_pipex(argc, argv, envp);
+		open_files(&prg, argv, 2, argc);
+		pipe(prg.pipa);
+		prg.pid = fork();
+		if (prg.pid == 0)
+			ft_son(&prg, argv[2], envp);
+		else
+			ft_father(&prg, argv[3], envp);
 	}
 	else
-		errors(2);
+	{
+		perror("wrong number of arguments");
+		exit(EXIT_FAILURE);
+	}
 }

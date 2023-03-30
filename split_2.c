@@ -6,7 +6,7 @@
 /*   By: ltombell <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/04 12:34:52 by ltombell          #+#    #+#             */
-/*   Updated: 2022/11/25 18:22:26 by ltombell         ###   ########.fr       */
+/*   Updated: 2022/11/28 12:14:01 by ltombell         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,17 +95,11 @@ char	*create_word_virgo(char const *s, int start, char c)
 	return (newword);
 }
 
-char	**ft_split2(char const *s, char c)
+void	ft_splitting(char const *s, char c, char **strarr, int i)
 {
-	char	**strarr;
-	int		i;
-	int		b;
-	int		flag;
+	int	b;
+	int	flag;
 
-	strarr = (char **)malloc(sizeof(char *) * (countwords(s, c) + 1));
-	if (!strarr)
-		return (NULL);
-	i = 0;
 	b = 0;
 	flag = 0;
 	while (s[i])
@@ -114,7 +108,7 @@ char	**ft_split2(char const *s, char c)
 		{
 			strarr[b] = create_word_virgo(s, i + 1, s[i]);
 			strarr[b + 1] = 0;
-			return (strarr);
+			return ;
 		}
 		else if (s[i] != c && flag == 0)
 		{
@@ -127,5 +121,17 @@ char	**ft_split2(char const *s, char c)
 		i++;
 	}
 	strarr[b] = NULL;
+}
+
+char	**ft_split2(char const *s, char c)
+{
+	char	**strarr;
+	int		i;
+
+	strarr = (char **)malloc(sizeof(char *) * (countwords(s, c) + 1));
+	if (!strarr)
+		return (NULL);
+	i = 0;
+	ft_splitting(s, c, strarr, i);
 	return (strarr);
 }
